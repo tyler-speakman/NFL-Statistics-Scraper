@@ -1,0 +1,204 @@
+<html>
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/1.3.1/lodash.min.js" type="text/JavaScript"></script>
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/async/1.22/async.min.js" type="text/JavaScript"></script>-->
+    <!--<script src="https://rawgithub.com/caolan/async/master/lib/async.js" type="text/JavaScript"></script>-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.2.2/d3.v3.min.js" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/uri.js/1.9.1/URI.js" type="text/JavaScript"></script>
+    <script src="async.js" type="text/javascript"></script>
+</head>
+<body>
+<style>
+    .player-lastname, .player-firstname, .player-id, .player-position, .season{
+        border-left: 2px solid #aaa;
+        background-color: #eee;
+    }
+</style>
+<ul>
+<li>Player stats: paged by season and listed by week: http://www.nfl.com/player/drewbrees/2504775/gamelogs?season=2012
+<blockquote>http://www.nfl.com/player/<span class="player-lastname">LAST_NAME</span><span class="player-firstname">FIRST_NAME</span>/<span class="player-id">PLAYER_ID</span>/gamelogs?season=<span class="season">SEASON</span></blockquote>
+</li>
+<li>Player list: paged and listed by name: http://www.nfl.com/players/search?category=position&filter=quarterback&conferenceAbbr=null&playerType=current&conference=ALL
+<blockquote>http://www.nfl.com/players/search?category=position&filter=<span class="player-position">POSITION</span>&conferenceAbbr=null&playerType=current&conference=ALL</blockquote></li>
+</ul>
+<button onclick="start" >start()</button>
+<svg id="canvas" style="width: 500px; height: 500px;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="border:1px solid #aaa;">
+
+</svg>
+
+    <script type="text/JavaScript" src="tmp . parse . nfl . v2.1.js"></script>    
+    <script type="text/JavaScript" src="tmp . parse . nfl . visualize . v0.1.js"></script>    
+    <script type="text/JavaScript">
+Storage.prototype.setObject = function(key, value) {
+    this.setItem(key, JSON.stringify(value));
+}
+
+Storage.prototype.getObject = function(key) {
+    return JSON.parse(this.getItem(key));
+}
+
+function Week(playerId, index, opponent) {
+    "use strict";
+
+   var self = {};
+
+    self.index = index;
+    self.playerId = playerId;
+    self.opponent = opponent;
+    self.points = {
+        passing: {
+            yds: 0,
+            td: 0,
+            int: 0
+        },
+        rushing: {
+            yds: 0,
+            td: 0
+        },
+        receiving: {
+            yds: 0,
+            td: 0
+        },
+        misc: {
+            fumtd: 0,
+            twopt: 0
+        },
+        fum: {
+            lost: 0
+        }
+    };
+
+    self.getTotalPointsFor = function(propertyGroup) {
+        var total = 0;
+
+        if(self.points[propertyGroup]){
+            for (var k in self.points[propertyGroup]) {
+                total += self.points[propertyGroup][k];
+            }
+        }else{
+            for (var m in self.points) {
+                for (var k in self.points[m]) {
+                    total += self.points[m][k];
+                }
+            }
+        }
+
+        return total;
+    }
+
+    return self;
+}
+
+function Season(index) {
+    "use strict";
+
+   var self = {};
+
+    self.index = index; // year
+    self.weeks = {};
+
+    self.getTotalPointsFor = function(propertyGroup) {
+        var total = 0;
+        for (var j in self.weeks) {
+            total += self.weeks[j].getTotalPointsFor(propertyGroup);
+        }
+
+        return total;
+    }
+
+    return self;
+}
+
+function Player(id, name, position) {
+    "use strict";
+
+    var self = {};
+
+    self.id = id;
+    self.name = name;
+    self.position = position;
+    self.seasons = {}
+
+    self.getTotalPointsFor = function(propertyGroup) {
+        var total = 0;
+        for (var i in self.seasons) {
+            total += self.seasons[i].getTotalPointsFor(propertyGroup);
+        }
+        
+        return total;
+    };
+    self.getTotalPointsForReceiving = function() {
+        return self.getTotalPointsFor('receiving');
+    };
+    self.getTotalPointsForRushing = function() {
+        return self.getTotalPointsFor('rushing');
+    };
+    self.getTotalPointsForPassing = function() {
+        return self.getTotalPointsFor('passing');
+    };
+
+    return self;
+}
+
+var storageManager = (function storageManager() {
+    var self = {};
+
+    self.getPlayers = function() {
+        var rawPlayers = localStorage.getObject('players') || {};
+        var mappedPlayers = {};
+        _.each(rawPlayers, function(value, key) {
+            var rawPlayer = value;
+            var mappedPlayer = _.extend(new Player(), rawPlayer);
+
+            var rawSeasons = mappedPlayer.seasons;
+            var mappedSeasons = {};
+            _.each(rawSeasons, function(value, key) {
+                var rawSeason = value;
+                var mappedSeason = _.extend(new Season(), rawSeason);
+
+                var rawWeeks = mappedSeason.weeks;
+                var mappedWeeks = {};
+                _.each(rawWeeks, function(value, key) {
+                    var rawWeek = value;
+                    var mappedWeek = _.extend(new Week(), rawWeek);
+
+                    mappedWeeks[mappedWeek.index] = mappedWeek;
+                });
+                mappedSeason.weeks = mappedWeeks;
+
+                mappedSeasons[mappedSeason.index] = mappedSeason;
+            });
+            mappedPlayer.seasons = mappedSeasons;
+
+            mappedPlayers[mappedPlayer.id] = mappedPlayer;
+        });
+
+        return mappedPlayers;
+    };
+
+    self.getPlayer = function(id) {
+        var storedPlayers = self.getPlayers();
+        return storedPlayers[id];
+    };
+
+    self.storePlayers = function(players) {
+        localStorage.setObject('players', players);
+    };
+
+    return self;
+})();
+    function start() {
+    
+        /*
+        loadData(function() {
+            visualizeData();
+        });
+        */  
+        visualizeData();
+    }
+    //(function(){start();})();
+    </script>
+
+</body>
+</html>

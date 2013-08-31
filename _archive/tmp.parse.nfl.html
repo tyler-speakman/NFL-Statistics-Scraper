@@ -1,0 +1,196 @@
+<html>
+<head>
+<script src="http://code.jquery.com/jquery-latest.js" type="text/JavaScript"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/1.3.1/lodash.min.js" type="text/JavaScript"></script>
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/URI.js/1.7.2/URI.min.js" type="text/JavaScript"></script>-->
+<script src="https://cdn.jsdelivr.net/uri.js/1.9.1/URI.js" type="text/JavaScript"></script>
+
+</head>
+<body>
+
+<iframe id="dataFrame" src="" frameborder="0" width="1" height="1"></iframe>
+
+<script type="text/JavaScript">
+/*
+function importScript(path){
+    var jq = document.createElement('script');
+    jq.src = path;
+    document.getElementsByTagName('head')[0].appendChild(jq);
+    jQuery.noConflict();
+}
+importScript("http://code.jquery.com/jquery-latest.min.js");
+importScript("https://cdnjs.cloudflare.com/ajax/libs/lodash.js/1.3.1/lodash.min.js");
+importScript("https://cdnjs.cloudflare.com/ajax/libs/js-url/1.8.0/js-url.min.js");
+*/
+
+Storage.prototype.setObject = function(key, value) {
+    this.setItem(key, JSON.stringify(value));
+}
+ 
+Storage.prototype.getObject = function(key) {
+    return JSON.parse(this.getItem(key));
+}
+
+function Week(index, opponent){
+    var self = {};
+    
+    self.index = index;
+    self.opponent = opponent;
+    self.points = {
+        passing: {yds: 0, td: 0, int: 0},
+        rushing: {yds: 0, td: 0},
+        receiving: {yds: 0, td: 0},
+        misc: {fumtd: 0, twopt: 0},
+        fum: {lost: 0}
+    };
+    
+    return self;
+}
+
+function Season(year){
+    var self = {};
+    
+    self.year = year;
+    self.weeks= {}
+    
+    return self;
+}
+
+function Player(id, name){
+    var self = {};
+    
+    self.id = id;
+    self.name = name;
+    self.seasons = {}
+    
+    return self;
+}
+
+function parsePlayers(document){
+    console.log('parsePlayers');
+    var storedPlayers = localStorage.getObject('players') || {};
+    var weekIndex = document.find('.weekNav li.ww').filter('.selected').text();
+    var seasonYear = document.find('.weekNav li.st-item .st-menu .selected').text().replace(' Season','');
+    var players = document.find('tr[class*="player"]').map(
+        function(key, value){ 
+            // Parse week
+            var weekOpponent = $(value).find(".playerOpponent").text();
+            var week = Week(weekIndex, weekOpponent);
+            week.points.passing.yds = $(value).find(".stat_5").text().replace('-',0);
+            week.points.passing.td = $(value).find(".stat_6").text().replace('-',0);
+            week.points.passing.int = $(value).find(".stat_7").text().replace('-',0);
+            week.points.rushing.yds = $(value).find(".stat_14").text().replace('-',0);
+            week.points.rushing.int = $(value).find(".stat_15").text().replace('-',0);
+            week.points.receiving.yds = $(value).find(".stat_21").text().replace('-',0);
+            week.points.receiving.td = $(value).find(".stat_22").text().replace('-',0);
+            week.points.misc.fumtd = $(value).find(".stat_29").text().replace('-',0);
+            week.points.misc.twopt = $(value).find(".stat_32").text().replace('-',0);
+            week.points.fum.lost = $(value).find(".stat_30").text().replace('-',0);
+
+            //var statTotal = $(value).find(".statTotal").text();
+
+            // Parse season
+            var season = Season(seasonYear)
+            season.weeks[weekIndex] = week
+            
+            // Parse player
+            var id = $(value).find(".playerCard")[0].className.replace(/.*playerNameId\-([\d]+).*/gi, "$1");
+            var name = $(value).find(".playerNameFull").text();            
+            var player = storedPlayers[id] || Player(id, name);
+            player.seasons[season.year] = season;
+                       
+            return player;
+        });
+        
+    _(players).each(function(value, key){storePlayer(value);});   
+}
+
+function storePlayer(player){
+    var storedPlayers = localStorage.getObject('players') || {};
+    storedPlayers[player.id] = player;
+    localStorage.setObject('players', storedPlayers);
+}    
+/// Loads the iFrame. The data in the iFrame must be sort by player name in order to properly scrape the data    
+function initializeDocument(documentState){
+    console.log('initializeDocument');
+    
+    var urlManager = new URI(documentState.currentUrl);
+    var search = urlManager.search(true);  
+    var storedPlayers = localStorage.getObject('players'); 
+    
+    // Update sort order
+    var sort =  search.sort;    
+    if(sort != 'name'){
+        urlManager
+            .removeSearch('sort')
+            .addSearch('sort', 'name');
+        
+        loadDocument(urlManager.toString())    
+    }
+        
+    // Increment player data page 
+    //var numberOfStoredPlayers = _(storedPlayers).keys().value().length || 0;
+    //console.log("numberOfStoredPlayers: " + numberOfStoredPlayers);    
+    var offset = parseInt(search.offset || 0);
+    documentState.offset = offset + 25
+    console.log("offset: " + offset);     
+    if((offset < 999)){
+        console.log('initializeDocument.incrementPlayerOffset');
+        urlManager
+            .removeSearch('offset')
+            .addSearch('offset', documentState.offset);
+        
+        console.log(urlManager.toString());
+        loadDocument(urlManager.toString())
+    } 
+    // If we have surpassed the maximum offset, then reset to zero
+    urlManager
+        .removeSearch('offset')
+        .addSearch('offset', 0);
+    console.log('initializeDocument.resetPlayerOffset');    
+    
+    // Increment game / week data page
+    var statWeek =  parseInt(search.statWeek || 0);
+    documentState.week = statWeek + 25
+    console.log("offset: " + offset); 
+    if((statWeek <= 20)){
+        console.log('initializeDocument.incrementWeek');
+        urlManager
+            .removeSearch('statWeek')
+            .addSearch('statWeek', statWeek + 1);
+        
+        console.log(urlManager.toString());
+        loadDocument(urlManager.toString())
+    } 
+    // If we have surpassed the maximum offset, then reset to one
+    urlManager
+        .removeSearch('statWeek')
+        .addSearch('statWeek', 1);    
+    console.log('initializeDocument.resetWeek');
+}
+
+function loadDocument(documentState){
+    console.log('loadDocument');
+    $.getJSON(
+        'http://anyorigin.com/get?url=' + encodeURIComponent(documentState.currentUrl) + '&callback=?', 
+        //'http://whateverorigin.org/get?url=' + documentUrl + '&callback=?', 
+        function(data){
+            console.log(data.contents);
+            var document = $(data.contents)
+            parsePlayers(document);    
+            initializeDocument(documentState);
+        });
+}
+
+var documentState = {
+    offset: 0,
+    week: 1,
+    season: 2012,
+    currentUrl: 'fantasy.nfl.com/research/scoringleaders?position=O&sort=name&statCategory=stats&statSeason=2012&statType=weekStats&statWeek=1&offset=0'
+};
+var documentUrl = 'fantasy.nfl.com/research/scoringleaders?position=O&sort=name&statCategory=stats&statSeason=2012&statType=weekStats&statWeek=1&offset=0';
+loadDocument(documentState);
+</script>    
+</body>
+</html>
+
