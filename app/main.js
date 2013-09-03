@@ -35,7 +35,7 @@ function handleStart(e, progressHandler) {
     var startingSeason = $('#season-start').data('datepicker').getDate().getFullYear();
     var endingSeason = $('#season-end').data('datepicker').getDate().getFullYear();
 
-    async.parallelLimit(requestsForPlayersByPosition, 5, function(err, results) {
+    async.parallelLimit(requestsForPlayersByPosition, 1, function(err, results) {
         handlePlayersLoadedByPosition(err, results, startingSeason, endingSeason, progressHandler);
     });
 
@@ -70,7 +70,7 @@ function handlePlayersLoadedByPosition(err, results, startingSeason, endingSeaso
         }
     }
 
-    async.parallelLimit(requestsForSeasonsByPlayer, 5, function(err, results) {
+    async.parallelLimit(requestsForSeasonsByPlayer, 1, function(err, results) {
         debugger;
         handleSeasonsLoadedByPlayer(err, results, "");
     });
@@ -193,9 +193,10 @@ $('#start-button').click(function(e) {
             console.log(data);
         }).on('change', function(e, data) {
             console.log(data);
-            var progress = (data * 100) + '%';
-            $('#progress .progress-bar').width(progress);
-            $('#progress .sr-only').text(progress + ' complete');
+            var progress = data * 100;
+            var progressLabel = Math.round(progress * 10) / 10 + '%';
+            $('#progress .progress-bar').width(progressLabel);
+            $('#progress .progress-bar span').text(progressLabel + ' complete');
         });
 
     handleStart(e, progress)
