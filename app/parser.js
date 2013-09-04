@@ -154,8 +154,8 @@ function getPlayersByPosition(position, callback) {
                 var element = $(data);
                 var team = element.find('td:eq(12)').text();
                 var position = element.find('td:eq(0)').text();
-                var firstName = element.find('td:eq(2)').find('a').text().replace(/(.+), (.+)/gi, '$1');
-                var lastName = element.find('td:eq(2)').find('a').text().replace(/(.+), (.+)/gi, '$2');
+                var firstName = element.find('td:eq(2)').find('a').text().replace(/(.+), (.+)/gi, '$2');
+                var lastName = element.find('td:eq(2)').find('a').text().replace(/(.+), (.+)/gi, '$1');
                 var status = element.find('td:eq(3)').text();
                 var playerId = element.find('td:eq(2)').find('a').attr('href').replace(/\/player\/[^\/]+\/(\d+)\/profile/gi, '$1');
 
