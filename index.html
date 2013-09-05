@@ -13,21 +13,21 @@
     <link rel="stylesheet" type="text/css" href="libs/bootstrap/css/bootstrap.min.css"/>
     <link rel="stylesheet" type="text/css" href="libs/bootstrap-datepicker/css/datepicker.css"/>
     <style>
-    body {
-        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
-    }    
-    .player-lastname, .player-firstname, .player-id, .player-position, .season{
-        border-left: 2px solid #aaa;
-        background-color: #eee;
-        text-transform: uppercase;
-    }
-    #file-upload { border: 10px dashed #ccc; width: 100%; height: 100%; color:#ccc;}
-    #file-upload:hover {border-color: #000; cursor: cell; color:#000;}
-    svg * {
-        cursor: default;
-    }
+        body {
+            padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+        }    
+        .player-lastname, .player-firstname, .player-id, .player-position, .season{
+            border-left: 2px solid #aaa;
+            background-color: #eee;
+            text-transform: uppercase;
+        }
+        #file-upload { border: 10px dashed #ccc; width: 100%; height: 100%; color:#ccc;}
+        #file-upload:hover {border-color: #000; cursor: cell; color:#000;}
+        svg * {
+            cursor: default;
+        }
 
-</style>    
+    </style>    
 </head>
 <body>
 
@@ -44,7 +44,7 @@
     <div class="collapse navbar-collapse">
       <ul class="nav navbar-nav">
         <li class="active"><a href="#">Home</a></li>
-        <li><a href="#about">About</a></li>
+        <!-- <li><a href="#about">About</a></li> -->
     </ul>
 </div><!--/.nav-collapse -->
 </div>
@@ -66,102 +66,132 @@
             <blockquote>http://www.nfl.com/players/search?category=position&d-447263-p=<span class="player-position">PAGE_NUMBER</span>&filter=<span class="player-position">POSITION</span>&conferenceAbbr=null&playerType=current&conference=ALL</blockquote>
         </li>    
     </ul>
-
-
-
-    <div class="form-inline" role="form">
-
-        <div class="form-group col-lg-2">
-            <div class="input-group">
-                <input type="button" class="form-control btn btn-default" value="2012" data-date-format="yyyy" id="season-start" data-provide="datepicker-inline" data-date-start-view="2">
-                <span class="input-group-addon">to</span>
-                <input type="button" class="form-control btn btn-default" value="2013" data-date-format="yyyy" id="season-end" data-provide="datepicker-inline" data-date-start-view="2">
-            </div>
-        </div>
-        <script type="text/javascript"> 
-            $('#season-start,#season-end')
-            .on('show',function(e){
-                var datepicker = $(e.target).data('datepicker');
-                datepicker.showMode(2);
-            })
-            .on('changeYear', function(e){
-                var datepicker = $(e.target).data('datepicker');
-                datepicker.setDate(e.date);
-                datepicker.hide();
-            }); 
-        </script>
-        <div class="form-group col-lg-2">
-            <label class="sr-only" for="player-position">Player Position</label>
-            <select id="player-position" class="form-control">
-                <option>all</option>
-                <option value="runningback">runningback</option>
-                <option value="widereceiver">widereceiver</option>
-                <option value="tightend">tightend</option>
-                <option value="offensiveline">offensiveline</option>
-                <option value="defensivelineman">defensivelineman</option>
-                <option value="linebacker">linebacker</option>
-                <option value="defensiveback">defensiveback</option>
-                <option value="kicker">kicker</option>
-                <option value="punter">punter</option>
-                <option value="quarterback">quarterback</option>
-            </select>
-        </div>
-        <button id="start-button" class="btn btn-default col-lg-2">start()</button>
-
-    </div>
-
-
 </div>
-
-
-</div><!-- /.container -->
-<br/> 
 
 <div class="container">
 
-    <div id="progress" class="progress">
-        <div class="progress-bar" role="progressbar" aria-valuenow="60" a aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
-            <!-- <span class="sr-only">0% Complete</span> -->
-            <span>0% Complete</span>
-        </div>
-    </div>    
-</div><!-- /.container -->
 
-<div class="container" style="height:200px;">
-    <div class="row">
-      <div class="col-md-8">
-        <svg id="canvas" style="width: 100%; height: 100%; border:1px solid #aaa;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> </svg>
+    <ul class="nav nav-tabs" id="myTab">
+      <li><a href="#scrape" data-toggle="tab">Scrape</a></li>
+      <li class="active"><a href="#visualize" data-toggle="tab">Visualize</a></li>
+  </ul>
+
+  <div class="tab-content" style="height:360px;">
+      <div class="tab-pane" id="scrape">
+        <!-- <p>Scrape</p> -->
+        <div class="row">
+
+            <div class="form-inline col-md-12" role="form">
+
+                <div class="form-group col-lg-2">
+                    <div class="input-group">
+                        <input type="button" class="form-control btn btn-default" value="2012" data-date-format="yyyy" id="season-start" data-provide="datepicker-inline" data-date-start-view="2">
+                        <span class="input-group-addon">to</span>
+                        <input type="button" class="form-control btn btn-default" value="2013" data-date-format="yyyy" id="season-end" data-provide="datepicker-inline" data-date-start-view="2">
+                    </div>
+                </div>
+                <script type="text/javascript"> 
+                    $('#season-start,#season-end')
+                    .on('show',function(e){
+                        var datepicker = $(e.target).data('datepicker');
+                        datepicker.showMode(2);
+                    })
+                    .on('changeYear', function(e){
+                        var datepicker = $(e.target).data('datepicker');
+                        datepicker.setDate(e.date);
+                        datepicker.hide();
+                    }); 
+                </script>
+                <div class="form-group col-lg-2">
+                    <label class="sr-only" for="player-position">Player Position</label>
+                    <select id="player-position" class="form-control">
+                        <option>all</option>
+                        <option value="runningback">runningback</option>
+                        <option value="widereceiver">widereceiver</option>
+                        <option value="tightend">tightend</option>
+                        <option value="offensiveline">offensiveline</option>
+                        <option value="defensivelineman">defensivelineman</option>
+                        <option value="linebacker">linebacker</option>
+                        <option value="defensiveback">defensiveback</option>
+                        <option value="kicker">kicker</option>
+                        <option value="punter">punter</option>
+                        <option value="quarterback">quarterback</option>
+                    </select>
+                </div>
+                <button id="scrape-button" class="btn btn-default col-lg-2">Scrape</button>
+
+            </div>     
+        </div>     
     </div>
-    <div class="col-md-4"><div id="file-upload" style="text-align:center;vertical-align:middle;"><div style="position:absolute;top:50%;left:0;width:100%;text-align:center;">DRAG JSON HERE..</div></div>
+    <div class="tab-pane fade in active" id="visualize">
+        <!-- <p>Visualize</p> -->
+        <div class="row">
+            <div class="col-md-6">
+                <svg id="canvas" style="width: 100%; height: 100%; border:1px solid #aaa;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"></svg>
+            </div>
+<!--             <div class="col-md-2">
+                <form role="form">
+                    <div class="form-group">
+                        <label for="xAxis">X-Axis</label>
+                        <select id="xAxis">
+                            <optgroup name="points">
+                                <option value="AVERAGE_POINTS">Average</option>
+                                <option value="TOTAL_POINTS">Total</option>
+                            </optgroup>
+                            <optgroup name="seasons">
+                                <option value="LAST_ACTIVE_SEASON">Last</option>
+                                <option value="TOTAL_NUMBER_OF_SEASONS">Total</option>
+                            </optgroup>                            
+                            <optgroup name="misc">
+                                <option value="MOMENTUM_MISC">Momentum</option>
+                                <option value="MOMENTUM_MISC">Name</option>
+                            </optgroup>                            
+                        </select>
+                    </div>
+                    
+                </form>
+            </div> -->
+            <div class="col-md-4">
+                <div id="file-upload" style="text-align:center;vertical-align:middle;">
+                    <div style="position:absolute;top:50%;left:0;width:100%;text-align:center;">DRAG JSON HERE..</div>
+                </div>
+            </div>
+            <script type="text/javascript">
+                var holder = document.getElementById('file-upload');
+                holder.ondragover = function() {
+                    return false;
+                };
+                holder.ondragend = function() {
+                    return false;
+                }; 
+                holder.ondrop = function(e) {
+                    e.preventDefault();
+                    var file = e.dataTransfer.files[0];
+                    var reader = new FileReader();
+                    reader.onload = function(event) {
+                        var unparsedJson = eval("'" + event.target.result + "'")
+                        var parsedJson = JSON.parse(unparsedJson)
+                        var players = _.map(parsedJson,function(value, key, list){ return value; });
 
+                        console.log('loaded '+ players.length +' players');
+                        visualizeData(players);
+                    };
+                    reader.readAsText(file)
+
+                    return false;
+                };
+            </script>  
+        </div>
+    </div>
 </div>
 
-<script>
-    var holder = document.getElementById('file-upload');
-    holder.ondragover = function() {
-        return false;
-    };
-    holder.ondragend = function() {
-        return false;
-    }; 
-    holder.ondrop = function(e) {
-        e.preventDefault();
-        var file = e.dataTransfer.files[0];
-        var reader = new FileReader();
-        reader.onload = function(event) {
-            var unparsedJson = eval("'" + event.target.result + "'")
-            var parsedJson = JSON.parse(unparsedJson)
-            var players = _.map(parsedJson,function(value, key, list){ return value; });
-
-            console.log('loaded '+ players.length +' players');
-            visualizeData(players);
-        };
-        reader.readAsText(file)
-
-        return false;
-    };
-</script>
-</div><!-- /.container -->
+<div id="progress" class="progress">
+    <div class="progress-bar" role="progressbar" aria-valuenow="60" a aria-valuemin="0" aria-valuemax="100" style="width: 0%;">
+        <!-- <span class="sr-only">0% Complete</span> -->
+        <span>0% Complete</span>
+    </div>
+</div>  
+</div>
 
 
 

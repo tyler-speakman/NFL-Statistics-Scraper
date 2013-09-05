@@ -57,12 +57,11 @@ function handlePlayersLoadedByPosition(err, results, startingSeason, endingSeaso
             var player = players[i];
             requestsForSeasonsByPlayer[player.id] = (function(player) {
                 return function(callback) {
-                    debugger;
                     getSeasonsByPlayer(player, startingSeason, endingSeason, callback);
                     progressHandler.completeTask({
                         labels: ["getSeasonsByPlayer"]
                     });
-                }
+                };
             })(player);
             progressHandler.queueTask({
                 labels: ["getSeasonsByPlayer"]
@@ -71,13 +70,11 @@ function handlePlayersLoadedByPosition(err, results, startingSeason, endingSeaso
     }
 
     async.parallelLimit(requestsForSeasonsByPlayer, 1, function(err, results) {
-        debugger;
         handleSeasonsLoadedByPlayer(err, results, "");
     });
 }
 
 function handleSeasonsLoadedByPlayer(err, results, position) {
-    debugger;
     if (err) {
         console.log('handleSeasonsLoadedByPlayer()' + ' ' + 'Error' + err);
         return;
@@ -183,7 +180,7 @@ function ProgressHandler(tmpLabels) {
 
 
 
-$('#start-button').click(function(e) {
+$('#scrape-button').click(function(e) {
     var progress = ProgressHandler(["getPlayersByPosition", "getSeasonsByPlayer"]);
 
     progress
@@ -199,5 +196,5 @@ $('#start-button').click(function(e) {
             $('#progress .progress-bar span').text(progressLabel + ' complete');
         });
 
-    handleStart(e, progress)
+    handleStart(e, progress);
 });
