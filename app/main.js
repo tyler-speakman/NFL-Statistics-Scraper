@@ -9,7 +9,7 @@ require.config({
         },
         "FileSaver": {
             exports: "saveAs"
-        }        
+        }
     },
     urlArgs: "noCache=" + (new Date()).getTime() // This prevents caching -- it is useful for debugging, but can be turned off for production
 });
@@ -21,24 +21,25 @@ require.config({
 // define("jquery", function () { return jQuery; });
 // define("knockout", ko);
 
-define(["FileSaver","parser", "visualizer"], function(saveAs, parser, visualizer) {
+define(["FileSaver", "parser", "visualizer", "ProgressHandler"], function(saveAs, parser, visualizer, ProgressHandler) {
     "use strict";
-    
+
     function scrapeHandler(e, progressHandler) {
         var selectedOption = $("#player-position option:selected");
-        var value = selectedOption.text();
+        var position = selectedOption.text();
 
         var requestsForPlayersByPosition = {};
-        if (value == "all") {
+        if (position == "all") {
             selectedOption.parents("#player-position")
                 .find("option:not(:selected)")
                 .each(function(index, option) {
-                    var position = $(option).text();
-                    requestsForPlayersByPosition[position] = (function(position) {
+                    var tmpPosition = $(option).text();
+                    requestsForPlayersByPosition[tmpPosition] = (function(position) {
                         return function(callback) {
-                            parser.getPlayersByPosition(position, callback);
+                            parser.getPlayersByPosition(tmpPosition, callback);
                             progressHandler.completeTask({
-                                labels: ["getPlayersByPosition"]
+                                labels: ["getPlayersByPosition"],
+                                message: "Loaded players in " + tmpPosition + " position."
                             });
                         };
                     })(position);
@@ -47,10 +48,11 @@ define(["FileSaver","parser", "visualizer"], function(saveAs, parser, visualizer
                     });
                 });
         } else {
-            requestsForPlayersByPosition[value] = function(callback) {
-                parser.getPlayersByPosition(value, callback);
+            requestsForPlayersByPosition[position] = function(callback) {
+                parser.getPlayersByPosition(position, callback);
                 progressHandler.completeTask({
-                    labels: ["getPlayersByPosition"]
+                    labels: ["getPlayersByPosition"],
+                    message: "Loaded players in " + position + " position."
                 });
             };
             progressHandler.queueTask({
@@ -64,6 +66,22 @@ define(["FileSaver","parser", "visualizer"], function(saveAs, parser, visualizer
         async.parallelLimit(requestsForPlayersByPosition, 1, function(err, results) {
             handlePlayersLoadedByPosition(err, results, startingSeason, endingSeason, progressHandler);
         });
+    }
+
+    function visualizeHandler(e) {
+        var file = e.dataTransfer.files[0];
+        var reader = new FileReader();
+        reader.onload = function(event) {
+            var unparsedJson = eval("'" + event.target.result.replace(/'/gi, "\\'") + "'");
+            var parsedJson = JSON.parse(unparsedJson);
+            var players = _.map(parsedJson, function(value, key, list) {
+                return value;
+            });
+
+            console.log("loaded " + players.length + " players");
+            visualizer.visualizeData(players);
+        };
+        reader.readAsText(file);
     }
 
     function handlePlayersLoadedByPosition(err, results, startingSeason, endingSeason, progressHandler) {
@@ -84,7 +102,8 @@ define(["FileSaver","parser", "visualizer"], function(saveAs, parser, visualizer
                     return function(callback) {
                         parser.getSeasonsByPlayer(player, startingSeason, endingSeason, callback);
                         progressHandler.completeTask({
-                            labels: ["getSeasonsByPlayer"]
+                            labels: ["getSeasonsByPlayer"],
+                            message: "Loaded seasons for " + player.toString() + "."
                         });
                     };
                 })(player);
@@ -115,133 +134,39 @@ define(["FileSaver","parser", "visualizer"], function(saveAs, parser, visualizer
         saveAs(blob, fileName);
     }
 
-    function ProgressHandler(tmpLabels) {
-        var self = $("<div/>");
+    function initializeScrapeEventHandlers() {
+        $("#scrape-button").click(function(e) {
+            var progress = new ProgressHandler(["getPlayersByPosition", "getSeasonsByPlayer"]);
 
-        var numberOfTasksCompleted = {};
-        var numberOfTasksQueued = {};
+            progress
+                .on("queueTask", function(e, data) {}).on("completeTask", function(e, data) {}).on("change", function(e, data) {
+                    var progress = data.progress * 100;
+                    var progressLabel = Math.round(progress * 10) / 10 + "%";
+                    $("#progress .progress-bar").width(progressLabel);
+                    $("#progress .progress-bar span").text(progressLabel + ", \"" + data.message + "\"");
+                });
 
-        var labels = tmpLabels || ["DEFAULT"];
-        _.each(labels, function(value, key, list) {
-            numberOfTasksCompleted[value] = 0;
-            numberOfTasksQueued[value] = 0;
+            scrapeHandler(e, progress);
         });
-
-        function parseArgs() {
-            if (arguments.length === 1 && typeof(arguments[0]) === "object") {
-                return {
-                    count: arguments[0].count || 1,
-                    labels: arguments[0].labels || labels
-                };
-            } else {
-                return {
-                    count: arguments.length > 0 && typeof(arguments[0]) === "number" ? arguments[0] : 1,
-                    labels: arguments.length > 1 ? [].slice.call(arguments, 1) : labels
-                };
-            }
-        }
-
-        self.completeTask = function() {
-            var args = parseArgs.apply(null, arguments);
-
-            _.each(args.labels, function(value, key, list) {
-                numberOfTasksCompleted[value] += args.count;
-            });
-
-            self.trigger("completeTask", self.getProgress());
-            self.trigger("change", self.getProgress());
-        };
-
-        self.queueTask = function() {
-            var args = parseArgs.apply(null, arguments);
-
-            _.each(args.labels, function(value, key, list) {
-                numberOfTasksQueued[value] += args.count;
-            });
-
-            self.trigger("queueTask", self.getProgress());
-            self.trigger("change", self.getProgress());
-        };
-
-        self.getNumberOfTasksCompleted = function() {
-            var args = parseArgs.apply(null, arguments);
-
-            return _.reduce(args.labels, function(memo, value) {
-                return memo + numberOfTasksQueued[value];
-            }, 0);
-        };
-
-        self.getNumberOfTasksQueued = function() {
-            var args = parseArgs.apply(null, arguments);
-
-            return _.reduce(args.labels, function(memo, value) {
-                return memo + numberOfTasksCompleted[value];
-            }, 0);
-        };
-
-        self.getProgress = function() {
-            var args = parseArgs.apply(null, arguments);
-
-            return _.reduce(args.labels, function(memo, value) {
-
-                if (numberOfTasksQueued[value] === 0) {
-                    return memo;
-                } else {
-                    return memo + (numberOfTasksCompleted[value] / numberOfTasksQueued[value]) / args.labels.length;
-                }
-            }, 0);
-        };
-
-        return self;
     }
 
+    function initializeVisualizeEventHandlers() {
+        var holder = document.getElementById("file-upload");
+        holder.ondragover = function() {
+            return false;
+        };
+        holder.ondragend = function() {
+            return false;
+        };
+        holder.ondrop = function(e) {
+            e.preventDefault();
 
-    (function() {
-        initializeScrapeEventHandlers();
-        initializeVisualizeEventHandlers();
+            visualizeHandler(e);
 
-        function initializeScrapeEventHandlers() {
-            $("#scrape-button").click(function(e) {
-                var progress = new ProgressHandler(["getPlayersByPosition", "getSeasonsByPlayer"]);
+            return false;
+        };
+    }
 
-                progress
-                    .on("queueTask", function(e, data) {}).on("completeTask", function(e, data) {}).on("change", function(e, data) {
-                        var progress = data * 100;
-                        var progressLabel = Math.round(progress * 10) / 10 + "%";
-                        $("#progress .progress-bar").width(progressLabel);
-                        $("#progress .progress-bar span").text(progressLabel + " complete");
-                    });
-
-                scrapeHandler(e, progress);
-            });
-        }
-
-        function initializeVisualizeEventHandlers() {
-            var holder = document.getElementById("file-upload");
-            holder.ondragover = function() {
-                return false;
-            };
-            holder.ondragend = function() {
-                return false;
-            };
-            holder.ondrop = function(e) {
-                e.preventDefault();
-                var file = e.dataTransfer.files[0];
-                var reader = new FileReader();
-                reader.onload = function(event) {
-                    var unparsedJson = eval("'" + event.target.result.replace(/'/gi, "\\'") + "'");
-                    var parsedJson = JSON.parse(unparsedJson);
-                    var players = _.map(parsedJson, function(value, key, list) {
-                        return value;
-                    });
-
-                    console.log("loaded " + players.length + " players");
-                    visualizer.visualizeData(players);
-                };
-                reader.readAsText(file);
-
-                return false;
-            };
-        }
-    })();
+    initializeScrapeEventHandlers();
+    initializeVisualizeEventHandlers();
 });

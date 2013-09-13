@@ -28,11 +28,11 @@ define(["d3", "core", "math"], function(d3, core, mathEx) {
             .attr("stroke-dasharray", "2,2")
             .attr("opacity", 0.1)
             .append("svg:title")
-            .text(core.Player.prototype.toString);
+            .text(core.Player.prototype.toStringSummary);
 
         // Update
         markers
-            .transition().duration(11)
+            .transition().duration(111)
             .attr("r", function(player, index) {
                 return maxTotalPoints === 0 ? 0 : core.Player.prototype.getTotalPoints(player) / maxTotalPoints * VARIABLE_RADIUS + BASE_RADIUS;
             })
@@ -78,11 +78,11 @@ define(["d3", "core", "math"], function(d3, core, mathEx) {
             .attr("font-size", "12px")
             .attr("fill", "black")
             .append("svg:title")
-            .text(core.Player.prototype.toString);
+            .text(core.Player.prototype.toStringSummary);
 
         // Update
         labels
-            .transition().duration(11)
+            .transition().duration(111)
             .attr("x", function(player, index) {
                 // Use this "jig" to reduce the number of markers that are overlapping
                 var jig = core.Player.prototype.getPercentHash(player);
@@ -111,7 +111,7 @@ define(["d3", "core", "math"], function(d3, core, mathEx) {
         if (availableData.length > 0) {
             setTimeout(function() {
                 run.call(null, availableData, loadedData);
-            }, 11);
+            }, 111);
         }
     }
 
@@ -136,7 +136,7 @@ define(["d3", "core", "math"], function(d3, core, mathEx) {
 
         setTimeout(function() {
             run.call(null, availableData, loadedData);
-        }, 11);
+        }, 111);
     }
 
     return {

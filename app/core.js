@@ -134,11 +134,19 @@ define(["encode"], function(encode) {
             player = this;
         }
 
-        return player.firstName + " " + player.lastName + " of " + player.team +
+        return player.firstName + " " + player.lastName + " of " + player.team;
+    };
+    Player.prototype.toStringSummary = function(player) {
+        // console.log("PlayerFunctions.getTextSummary(" + player + ")");
+        if (player === null || player === undefined) {
+            player = this;
+        }
+
+        return Player.prototype.toString(player) +
             "\n# of seasons: " + Player.prototype.getNumberOfSeasons(player) + " (last played: " + Player.prototype.getLastSeasonPlayed(player) + ")" +
             "\nTotal points: " + Player.prototype.getTotalPoints(player) + " (~" + Player.prototype.getAveragePointsPerSeason(player) + " per season and ~" + Player.prototype.getAveragePointsPerGame(player) + " per game)" +
             "\nMomentum " + (Player.prototype.getPlayerMomentum(player) * 100).toFixed(2) + "% momentum";
-    };
+    };    
 
     /**
      * A class representing a single player's season statistics (i.e., 2012 season, 2013 season, etc.)
