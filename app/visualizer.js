@@ -120,7 +120,10 @@ define(["d3", "core", "math"], function(d3, core, mathEx) {
 
         // Filter out null elements
         availableData = _.filter(availableData, function(element, index, list) {
-            return element !== null;
+            var isNull = element === null;
+            var currentYear = (new Date()).getUTCFullYear();
+            var isActive = currentYear - core.Player.prototype.getLastSeasonPlayed(element) <= 2;// Player was active in the last 3 years
+            return !isNull && isActive;
         });
 
         // Sort data
