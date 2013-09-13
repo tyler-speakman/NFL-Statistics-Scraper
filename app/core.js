@@ -99,7 +99,7 @@ define(["encode"], function(encode) {
 
         return _.reduce(player.seasons, function(memo, value, index, list) {
             var season = value;
-            return season.index;
+            return Math.max(season.index, memo);
         }, 0);
     };
     Player.prototype.getPlayerMomentum = function(player) {
