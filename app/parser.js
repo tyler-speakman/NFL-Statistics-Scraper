@@ -9,10 +9,7 @@ define(["encode", "core"], function(encode, core) {
     function DocumentManager(url) {
 
         var uri = new URI(url);
-        var queue = async.queue(processWithYql, 2);
-        queue.drain = function() {
-            console.log("DocumentManager.queue : Empty");
-        };
+        var queue = async.queue(processWithYql, 10);
 
         var self = {};
 
@@ -108,9 +105,10 @@ define(["encode", "core"], function(encode, core) {
                     q: "select * from html where url=\"" + url + "\" and xpath='//div[@id=\"main-content\"]'", //encodeURIComponent(),and xpath='//div[@id="main-content"]'
                     diagnostics: true,
                     debug: true,
-                }
+                },
+                cache: true
             }).done(function(data) {
-                var result = $(data).find("query results");
+                var result = $(data).find("query results #main-content");
                 if (result.length === 0) {
                     var errors = _.reduce($(data).find("query diagnostics url"), function(memo, value, index, list) {
                         return memo + value + "; ";
@@ -325,16 +323,16 @@ define(["encode", "core"], function(encode, core) {
 
                     var gameIndex = element.find("td:eq(0)").text();
                     var gameYear = seasonIndex;
-                    var gameMonth = element.find("td:eq(1)").text().replace(/(\d+)\/(\d+)/gi, "$1");
-                    var gameDay = element.find("td:eq(1)").text().replace(/(\d+)\/(\d+)/gi, "$2");
-                    var gameDate = new Date(gameYear, gameMonth, gameDay).toJSON().split("T")[0]; //Format as YYYY/MM/DD
+                    var gameMonth = element.find("td:eq(1)").text().replace(/(\d+)\/(\d+)/gi, "$1").replace(/[\r\n\s]+/gi, ""); // Remove carriage return, newline and whitespace characters
+                    var gameDay = element.find("td:eq(1)").text().replace(/(\d+)\/(\d+)/gi, "$2").replace(/[\r\n\s]+/gi, ""); // Remove carriage return, newline and whitespace characters
+                    var gameDate = gameMonth == "Bye" || gameDay == "Bye" ? "Bye" : new Date(gameYear, gameMonth, gameDay).toJSON().split("T")[0]; //Format as YYYY/MM/DD
                     var gameOpponent = element.find("td:eq(2)").text().replace(/\s/gi, "");
                     var gamePlayed = element.find("td:eq(4)").text().replace(/\s/gi, "");
                     var gameStarted = element.find("td:eq(5)").text().replace(/\s/gi, "");
 
                     var parsedGame = new core.Game(gameIndex, gameDate, gameOpponent, gamePlayed, gameStarted);
-                    parsedGame.score.forTeam = parseInt(element.find("td:eq(3)").find("a").text().replace(/(\d+)\-(\d+)/gi, "$1"), 10) || 0;
-                    parsedGame.score.againstTeam = parseInt(element.find("td:eq(3)").find("a").text().replace(/(\d+)\-(\d+)/gi, "$2"), 10) || 0;
+                    parsedGame.score.forTeam = parseInt(element.find("td:eq(3)").find("a").text().replace(/(\d+)\-(\d+)/gi, "$1"), 10) || 0; // Convert to int, or default to zero
+                    parsedGame.score.againstTeam = parseInt(element.find("td:eq(3)").find("a").text().replace(/(\d+)\-(\d+)/gi, "$2"), 10) || 0; // Convert to int, or default to zero
 
                     var columns = element.find("td");
                     for (var i = 6; i < columns.length; i++) {
@@ -345,7 +343,7 @@ define(["encode", "core"], function(encode, core) {
                         if (parsedGame.points[pointTypeCategory] === null || parsedGame.points[pointTypeCategory] === undefined) {
                             parsedGame.points[pointTypeCategory] = {};
                         }
-                        parsedGame.points[pointTypeCategory][pointType] = parseInt(columns.eq(i).text().replace(/\-+/gi, "0"), 10);
+                        parsedGame.points[pointTypeCategory][pointType] = parseInt(columns.eq(i).text().replace(/\-+/gi, "0"), 10) || 0;
                     }
 
                     return parsedGame;
