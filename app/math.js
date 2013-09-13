@@ -1,4 +1,5 @@
 define(function() {
+    "use strict";
 	var ExtendedMath = {};
 	ExtendedMath.constants = {};
 	ExtendedMath.constants.MAX_INT = Math.pow(2, 32) - 1;

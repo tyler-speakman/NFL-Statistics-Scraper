@@ -1,0 +1,12 @@
+{
+    "globals": {
+        "require": false,
+        "console": false,
+        "_": false,
+        "$": false,
+        "async": false,
+        "URI":false,
+        "define":false,
+        "saveAs":false
+    }
+}

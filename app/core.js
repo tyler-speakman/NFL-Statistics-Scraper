@@ -1,4 +1,5 @@
-define([], function() {
+define(["encode"], function(encode) {
+    "use strict";
     /**
      * A class representing an NFL player
      * @param {[type]} id
@@ -9,7 +10,6 @@ define([], function() {
      */
 
     function Player(id, firstName, lastName, team, position, status) {
-        'use strict';
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -21,25 +21,14 @@ define([], function() {
         return this;
     }
     Player.prototype.getHash = function(player) {
-        'use strict';
-        // console.log('PlayerFunctions.getHash(' + player + ')');
+        // console.log("PlayerFunctions.getHash(" + player + ")");
         if (player === null || player === undefined) {
             player = this;
         }
 
-        var str = String(Math.pow(player.id, 2));
-        var hash = 0;
-        if (str.length === 0) return hash;
-        for (var i = 0; i < str.length; i++) {
-            var char = str.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash; // Convert to 32bit integer
-        }
-
-        return hash;
+        return encode.hash(String(Math.pow(player.id, 2)));
     };
     Player.prototype.getTotalPointsFor = function(player, propertyGroup) {
-        'use strict';
         var total = 0;
         for (var i in player.seasons) {
             total += Season.prototype.getTotalPointsFor(player.seasons[i], propertyGroup);
@@ -48,8 +37,7 @@ define([], function() {
         return total;
     };
     Player.prototype.getPercentHash = function(player) {
-        'use strict';
-        // console.log('PlayerFunctions.getPercentHash(' + player + ')');
+        // console.log("PlayerFunctions.getPercentHash(" + player + ")");
         if (player === null || player === undefined) {
             player = this;
         }
@@ -58,8 +46,7 @@ define([], function() {
         return Player.prototype.getHash(player) / MAX_INT;
     };
     Player.prototype.getTotalPoints = function(player) {
-        'use strict';
-        // console.log('PlayerFunctions.getTotalPoints(' + player + ')');
+        // console.log("PlayerFunctions.getTotalPoints(" + player + ")");
         if (player === null || player === undefined) {
             player = this;
         }
@@ -67,8 +54,7 @@ define([], function() {
         return Player.prototype.getTotalPointsFor(player);
     };
     Player.prototype.getNumberOfSeasons = function(player) {
-        'use strict';
-        // console.log('PlayerFunctions.getNumberOfSeasons(' + player + ')');
+        // console.log("PlayerFunctions.getNumberOfSeasons(" + player + ")");
         if (player === null || player === undefined) {
             player = this;
         }
@@ -76,8 +62,7 @@ define([], function() {
         return player.seasons.length;
     };
     Player.prototype.getAverageNumberOfGamesPerSeason = function(player) {
-        'use strict';
-        // console.log('PlayerFunctions.getAveragePoints(' + player + ')');
+        // console.log("PlayerFunctions.getAveragePoints(" + player + ")");
         if (player === null || player === undefined) {
             player = this;
         }
@@ -86,10 +71,9 @@ define([], function() {
             var season = value;
             return memo + Season.prototype.getNumberOfGames(season);
         }, 0) / Player.prototype.getNumberOfSeasons(player));
-    };    
+    };
     Player.prototype.getAveragePointsPerSeason = function(player) {
-        'use strict';
-        // console.log('PlayerFunctions.getAveragePoints(' + player + ')');
+        // console.log("PlayerFunctions.getAveragePoints(" + player + ")");
         if (player === null || player === undefined) {
             player = this;
         }
@@ -97,8 +81,7 @@ define([], function() {
         return player.seasons.length === 0 ? 0 : Math.floor(Player.prototype.getTotalPoints(player) / Player.prototype.getNumberOfSeasons(player));
     };
     Player.prototype.getAveragePointsPerGame = function(player) {
-        'use strict';
-        // console.log('PlayerFunctions.getAveragePoints(' + player + ')');
+        // console.log("PlayerFunctions.getAveragePoints(" + player + ")");
         if (player === null || player === undefined) {
             player = this;
         }
@@ -109,8 +92,7 @@ define([], function() {
         }, 0) / Player.prototype.getNumberOfSeasons(player));
     };
     Player.prototype.getLastSeasonPlayed = function(player) {
-        'use strict';
-        // console.log('PlayerFunctions.getLastSeasonPlayed(' + player + ')');
+        // console.log("PlayerFunctions.getLastSeasonPlayed(" + player + ")");
         if (player === null || player === undefined) {
             player = this;
         }
@@ -121,8 +103,7 @@ define([], function() {
         }, 0);
     };
     Player.prototype.getPlayerMomentum = function(player) {
-        'use strict';
-        // console.log('PlayerFunctions.getTextSummary(' + player + ')');
+        // console.log("PlayerFunctions.getTextSummary(" + player + ")");
         if (player === null || player === undefined) {
             player = this;
         }
@@ -148,16 +129,15 @@ define([], function() {
         return seasonalMomentum;
     };
     Player.prototype.toString = function(player) {
-        'use strict';
-        // console.log('PlayerFunctions.getTextSummary(' + player + ')');
+        // console.log("PlayerFunctions.getTextSummary(" + player + ")");
         if (player === null || player === undefined) {
             player = this;
         }
 
-        return player.firstName + ' ' + player.lastName + ' of ' + player.team +
-            '\n# of seasons: ' + Player.prototype.getNumberOfSeasons(player) + ' (last played: ' + Player.prototype.getLastSeasonPlayed(player) + ')' +
-            '\nTotal points: ' + Player.prototype.getTotalPoints(player) + ' (~' + Player.prototype.getAveragePointsPerSeason(player) + ' per season and ~' + Player.prototype.getAveragePointsPerGame(player) + ' per game)' +
-            '\nMomentum ' + (Player.prototype.getPlayerMomentum(player) * 100).toFixed(2) + '% momentum';
+        return player.firstName + " " + player.lastName + " of " + player.team +
+            "\n# of seasons: " + Player.prototype.getNumberOfSeasons(player) + " (last played: " + Player.prototype.getLastSeasonPlayed(player) + ")" +
+            "\nTotal points: " + Player.prototype.getTotalPoints(player) + " (~" + Player.prototype.getAveragePointsPerSeason(player) + " per season and ~" + Player.prototype.getAveragePointsPerGame(player) + " per game)" +
+            "\nMomentum " + (Player.prototype.getPlayerMomentum(player) * 100).toFixed(2) + "% momentum";
     };
 
     /**
@@ -166,23 +146,20 @@ define([], function() {
      */
 
     function Season(index) {
-        'use strict';
         this.index = index; // year
         this.games = [];
 
         return this;
     }
-    
+
     Season.prototype.getNumberOfGames = function(season) {
-        'use strict';
         if (season === null || season === undefined) {
             season = this;
         }
 
         return season.games.length;
-    }    
+    };
     Season.prototype.getTotalPointsFor = function(season, propertyGroup) {
-        'use strict';
         if (season === null || season === undefined) {
             season = this;
         }
@@ -193,9 +170,8 @@ define([], function() {
         }
 
         return totalPoints;
-    }
+    };
     Season.prototype.getAveragePointsPerGameFor = function(season, propertyGroup) {
-        'use strict';
         if (season === null || season === undefined) {
             season = this;
         }
@@ -204,7 +180,7 @@ define([], function() {
         var averagePointsPerGame = totalPoints / season.games.length;
 
         return averagePointsPerGame;
-    }
+    };
 
     /**
      * A class representing a single player's game statistics (i.e., game 1 of the 2012 season, etc.)
@@ -213,7 +189,6 @@ define([], function() {
      */
 
     function Game(index, date, opponent, playedInGame, startedGame) {
-        'use strict';
         this.index = index;
         this.date = date;
         this.playedInGame = playedInGame;
@@ -256,7 +231,6 @@ define([], function() {
         return this;
     }
     Game.prototype.getTotalPointsFor = function(game, propertyGroup) {
-        'use strict';
         if (game === null || game === undefined) {
             game = this;
         }
@@ -276,8 +250,7 @@ define([], function() {
         }
 
         return total;
-    }
-
+    };
 
     /**
      * Extends functions (i.e., max / min values for a set, memoization, etc.)
@@ -326,7 +299,7 @@ define([], function() {
         Player: Player,
         Season: Season,
         Game: Game
-    }
+    };
 });
 
 
@@ -373,12 +346,12 @@ define([], function() {
 // })();
 
 // self.getTotalPointsForReceiving = function() {
-//     return self.getTotalPointsFor('receiving');
+//     return self.getTotalPointsFor("receiving");
 // };
 // self.getTotalPointsForRushing = function() {
-//     return self.getTotalPointsFor('rushing');
+//     return self.getTotalPointsFor("rushing");
 // };
 // self.getTotalPointsForPassing = function() {
-//     return self.getTotalPointsFor('passing');
+//     return self.getTotalPointsFor("passing");
 // };
 //
