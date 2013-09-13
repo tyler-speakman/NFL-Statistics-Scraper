@@ -96,7 +96,13 @@ define(["encode", "core"], function(encode, core) {
         return self;
 
 
-        function processWithYql(url, callback) {
+        function processWithYql(url, callback, retries) {
+            var MAX_RETRIES = 3;
+            retries = retries === null || retries === undefined || retries === NaN ? MAX_RETRIES : retries - 1;
+            if (retries < 0) {
+                callback("DocumentManager.processWithYql(" + encode.hash(url) + ", " + url + ") : Failed (" + MAX_RETRIES + " retries)", null);
+            }
+
             var urlForYql = "http://query.yahooapis.com/v1/public/yql"; // + "&format=xml&callback=?";
 
             return $.ajax({
@@ -110,28 +116,34 @@ define(["encode", "core"], function(encode, core) {
             }).done(function(data) {
                 var result = $(data).find("query results #main-content");
                 if (result.length === 0) {
-                    var errors = _.reduce($(data).find("query diagnostics url"), function(memo, value, index, list) {
-                        return memo + value + "; ";
+                    var errors = _.reduce($(data).find("query diagnostics url[error]"), function(memo, value, index, list) {
+                        var element = $(value);
+                        return memo + element.attr("error") + ": \"" + element.text() + "\"; ";
                     }, "");
-                    callback("DocumentManager.processWithYql(" + encode.hash(url) + ", " + url + ") : Failed(" + errors + ")", result);
+
+                    // callback("DocumentManager.processWithYql(" + encode.hash(url) + ", " + url + ") : Failed(" + errors + ")", result);
+                    console.log("DocumentManager.processWithYql(" + encode.hash(url) + ", " + url + ") : Failed(" + errors + ")");
+
+                    // Retry
+                    processWithYql(url, callback, retries);
                 } else {
                     callback(null, result);
                 }
             });
         }
 
-        // function processWithAo(url, callback) {
-        //     var urlForAnyOrigin = "http://anyorigin.com/get?url=" + encodeURIComponent(url) + "&callback=?";
-        //     // console.log(urlForAnyOrigin);
+        function processWithAo(url, callback) {
+            var urlForAnyOrigin = "http://anyorigin.com/get?url=" + encodeURIComponent(url) + "&callback=?";
+            // console.log(urlForAnyOrigin);
 
-        //     return $.ajax({
-        //         dataType: "json",
-        //         url: urlForAnyOrigin//,
-        //         //cache: false
-        //     }).done(function(data) {
-        //         callback(null, $(data.contents));
-        //     });
-        // }
+            return $.ajax({
+                dataType: "json",
+                url: urlForAnyOrigin //,
+                //cache: false
+            }).done(function(data) {
+                callback(null, $(data.contents));
+            });
+        }
     }
 
     /**
@@ -177,7 +189,7 @@ define(["encode", "core"], function(encode, core) {
         var playersParser = (function() {
             var self = {};
             self.parse = function(doc) {
-                console.log("playersParser.parse()");
+                console.log("playersParser.parse(\"" + position + "\")");
 
                 if (doc === null || doc === undefined) {
                     return null;
@@ -286,7 +298,7 @@ define(["encode", "core"], function(encode, core) {
              * @return {object}         A player object with fully populated historical data
              */
             self.parse = function(doc) {
-                console.log("playerSeasonParser.parse()");
+                console.log("playerSeasonParser.parse(\"" + player.firstName + " " + player.lastName + "\", " + doc.find("select#season option[selected]").text(), ")");
                 if (doc === null || doc === undefined) {
                     return null;
                 }
