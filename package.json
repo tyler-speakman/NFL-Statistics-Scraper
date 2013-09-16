@@ -1,0 +1,10 @@
+{
+    "name": "NFL-Statistics-Scraper",
+    "description": "NFL Statistics Scraper",
+    "version": "0.0.1",
+    "dependencies": {
+      "connect": "*",
+      "flatiron": "*",
+      "union": "*"
+    }
+  }

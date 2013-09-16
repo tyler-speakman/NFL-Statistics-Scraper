@@ -24,6 +24,16 @@ require.config({
 define(["FileSaver", "parser", "visualizer", "ProgressHandler"], function(saveAs, parser, visualizer, ProgressHandler) {
     "use strict";
 
+    $.ajax({
+        type: "POST",
+        url: '/test',
+        data: { name: "John", time: "2pm" },
+        cache: false
+    }).done(function(data) {
+        debugger;
+        console.log(arguments);
+    });
+
     function scrapeHandler(e, progressHandler) {
         var selectedOption = $("#player-position option:selected");
         var position = selectedOption.text();
