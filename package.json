@@ -1,10 +1,16 @@
 {
-    "name": "NFL-Statistics-Scraper",
-    "description": "NFL Statistics Scraper",
-    "version": "0.0.1",
-    "dependencies": {
-      "connect": "*",
-      "flatiron": "*",
-      "union": "*"
-    }
-  }
+	"name": "NFL-Statistics-Scraper",
+	"description": "NFL Statistics Scraper",
+	"version": "0.0.1",
+	"scripts": {
+		"start": "node ./backend/server.js"
+	},
+	"dependencies": {
+		"lodash": "*",
+		"connect": "*",
+		"winston": "*",
+		"resourceful": "*",
+		"flatiron": "*",
+		"union": "*"
+	}
+}

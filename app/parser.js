@@ -98,7 +98,7 @@ define(["encode", "core"], function(encode, core) {
 
         function processWithYql(url, callback, retries) {
             var MAX_RETRIES = 3;
-            retries = retries === null || retries === undefined || retries === NaN ? MAX_RETRIES : retries - 1;
+            retries = (retries === null || retries === undefined || isNaN(retries)) ? MAX_RETRIES : retries - 1;
             if (retries < 0) {
                 callback("DocumentManager.processWithYql(" + encode.hash(url) + ", " + url + ") : Failed (" + MAX_RETRIES + " retries)", null);
             }
@@ -123,6 +123,7 @@ define(["encode", "core"], function(encode, core) {
 
                     // callback("DocumentManager.processWithYql(" + encode.hash(url) + ", " + url + ") : Failed(" + errors + ")", result);
                     console.log("DocumentManager.processWithYql(" + encode.hash(url) + ", " + url + ") : Failed(" + errors + ")");
+                    console.log("Retrying.. (" + retries + ")")
 
                     // Retry
                     processWithYql(url, callback, retries);
