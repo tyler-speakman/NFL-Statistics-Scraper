@@ -3,11 +3,13 @@
 	"description": "NFL Statistics Scraper",
 	"version": "0.0.1",
 	"scripts": {
-		"start": "node ./backend/server.js"
+		"start": "node ./backend.js"
 	},
 	"dependencies": {
 		"lodash": "*",
 		"connect": "*",
+		"async": "*",
+		"gzippo": "*",
 		"winston": "*",
 		"resourceful": "*",
 		"flatiron": "*",

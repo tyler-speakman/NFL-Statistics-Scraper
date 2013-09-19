@@ -1,95 +1,119 @@
-'use strict';
 var path = require('path'),
-  union = require('union'),
-  winston = require('winston'),
-  connect = require('connect');
-// director = require('director'),
+  http = require('http'),
+  connect = require('connect'),
+  gzippo = require('gzippo'),
+  _ = require('lodash');
 
-var flatiron = require('flatiron'),
-  app = flatiron.app;
+var storage = require('./storage');
 
-// Set up app.config to use ./config.json to get and set configuration settings.
-app.config.file({
-  file: path.join(__dirname, 'config.json')
-});
+var myData = storage.load() || {};
 
-app
-  .use(flatiron.plugins.http, {
-    // HTTP options
-    before: [
-      // Try to match the request to well-defined route. If none exists, then continue to other handlers.
-      function(req, res) {
-        app.log.info(req.url + ':' + req.method, req.body);
-        var found = app.router.dispatch(req, res);
-        if (!found) {
-          res.emit('next');
-        }
-      },
-      // Provide access to all files (security? :P)
-      connect.static(path.resolve('./')),
-      // Provide access to all directories (security? :P)
-      connect.directory(path.resolve('./'))
-    ]
-  });
+var DATA_ROUTE_REGEXP = new RegExp(/^\/data(\/id=([\d]+)){0,1}(\/name=([\w]+)){0,1}(\/position=([\w]+)){0,1}$/i);
 
-app.router.path(/data/, function() {
 
-  this.get(function(callback) {
-    console.log(arguments);
-    this.res.writeHead(200, {
-      'content-type': 'text/plain'
-    });
-    this.res.end('name: ' + name);
-  });
+var app = connect()
+  .use(connect.logger('dev'))
+  .use(connect.static(path.resolve('./')))
+  .use(connect.directory(path.resolve('./')))
+  .use(gzippo.compress())
+  .use(function(req, res, next) {
+    // Check if this request is for the "data" route
+    if (DATA_ROUTE_REGEXP.test(req.url)) {
+      console.log("[200] " + req.method + " to " + req.url);
 
-  this.get(/name\/:name/, function(name, callback) {
-    console.log(arguments);
-    this.res.writeHead(200, {
-      'content-type': 'text/plain'
-    });
-    this.res.end('name: ' + name);
-  });
+      switch (req.method) {
 
-  this.get(/position\/:position/, function(position, callback) {
-    console.log(arguments);
-    this.res.writeHead(200, {
-      'content-type': 'text/plain'
-    });
-    this.res.end('position: ' + position);
-  });
+        case 'POST':
+          handleDataRoutePost(req, res);
+          break;
 
-  // Now, when you post a body to the server, it will reply with a JSON
-  // representation of the same body.
-  this.post(function() {
-    for (var i in this.req.body) {
-      var player = new Player(this.req.body[i]);
-      player.save();
+        case 'GET':
+          handleDataRouteGet(req, res);
+          break;
+
+        default:
+          break;
+      }
     }
-
-    this.res.json(200, this.req.body);
   });
-});
 
 // Start the server!
-app.start(app.config.get('port') || 8080, function(err) {
+http.createServer(app).listen(8080, 'localhost', function(err) {
   if (err) {
     throw err;
   }
 
-  var addr = app.server.address();
-  app.log.info('Listening on http://' + addr.address + ':' + addr.port);
+  console.log(arguments)
+  console.log('Listening on http://localhost:8080/');
 });
 
-var resourceful = require('resourceful');
 
-var Player = resourceful.define('player', function() {
-  this.use('memory');
 
-  // this.array('players');
+function handleDataRoutePost(req, res) {
+  // Update existing data
+  if (req.method == 'POST') {
 
-  this.timestamps();
-});
+    var fullBody = '';
+    req.on('data', function(partialBody) {
+      fullBody += partialBody.toString()
+    });
 
-// Creature.prototype.feed = function (food) {
-//   this.belly.push(food);
-// };
+    req.on('end', function() {
+      var parsedFullBody = JSON.parse(fullBody);
+      var arrayOfInstances = parsedFullBody;
+      var hashtableOfInstances = _.reduce(parsedFullBody, function(memo, instance) {
+        // console.log(instance.id);
+        memo[instance.id] = instance;
+        return memo;
+      }, {});
+
+      myData = _.extend(myData, hashtableOfInstances);
+
+      storage.save(myData);
+
+      res.writeHead(200, "OK", {
+        'Content-Type': 'application/json'
+      });
+      res.end(JSON.stringify(myData));
+    });
+  }
+}
+
+function handleDataRouteGet(req, res) {
+  // Select existing data
+  var DATA_ROUTE_REGEXPExec = DATA_ROUTE_REGEXP.exec(req.url);
+  if (DATA_ROUTE_REGEXPExec == null) throw "Unable to parse data route."
+
+  var id = DATA_ROUTE_REGEXPExec[2];
+  var name = DATA_ROUTE_REGEXPExec[4];
+  var position = DATA_ROUTE_REGEXPExec[6];
+
+  // console.log(_.keys(myData));
+  var result;
+  if ( !! id) {
+    // http://localhost:8080/data/id=216
+    console.log("id", id);
+    result = myData[id];
+  } else if ( !! name) {
+    // http://localhost:8080/data/name=DavisFred
+    console.log("name", name);
+    result = [_.find(myData, function(value, key, list) {
+      return value.lastName + value.firstName == name;
+    })];
+  } else if ( !! position) {
+    // (i.e., http://localhost:8080/data/position=K)
+    console.log("position", position);
+    result = [_.filter(myData, function(value, key, list) {
+      return value.position == position;
+    })];
+  } else {
+    console.log("all");
+    result = myData;
+  }
+  // console.log(result);
+  // Return existing data
+  res.writeHead(200, "OK", {
+    'Content-Type': 'application/json'
+  });
+  res.end(JSON.stringify(result));
+}

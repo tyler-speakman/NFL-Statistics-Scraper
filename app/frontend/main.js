@@ -74,7 +74,13 @@ define(["frontend/storage", "parser", "frontend/visualizer", "ProgressHandler"],
         var reader = new FileReader();
         reader.onload = function(event) {
             var unparsedJson = eval("'" + event.target.result.replace(/'/gi, "\\'") + "'");
+            storage.saveToServer(unparsedJson).then(function() {
+                debugger;
+                console.log(arguments);
+            });
+            
             var parsedJson = JSON.parse(unparsedJson);
+
             var players = _.map(parsedJson, function(value, key, list) {
                 return value;
             });
