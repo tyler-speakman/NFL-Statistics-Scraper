@@ -1,4 +1,4 @@
-define(["encode"], function(encode) {
+define(["lodash", "./encode"], function(_, encode) {
     "use strict";
     /**
      * A class representing an NFL player
@@ -22,13 +22,19 @@ define(["encode"], function(encode) {
     }
     Player.prototype.getHash = function(player) {
         // console.log("PlayerFunctions.getHash(" + player + ")");
-        if (player === null || player === undefined) {
+        if (arguments[0] === null || arguments[0] === undefined) {
             player = this;
         }
 
         return encode.hash(String(Math.pow(player.id, 2)));
     };
     Player.prototype.getTotalPointsFor = function(player, propertyGroup) {
+        // If partial arguments are provided, apply the correct values
+        if (arguments[0] === null || arguments[0] === undefined || typeof arguments[0] != "object") {
+            propertyGroup = arguments[0]; // Player object, not provided as parameter, so fall back
+            player = this;
+        }
+
         var total = 0;
         for (var i in player.seasons) {
             total += Season.prototype.getTotalPointsFor(player.seasons[i], propertyGroup);
@@ -38,7 +44,7 @@ define(["encode"], function(encode) {
     };
     Player.prototype.getPercentHash = function(player) {
         // console.log("PlayerFunctions.getPercentHash(" + player + ")");
-        if (player === null || player === undefined) {
+        if (arguments[0] === null || arguments[0] === undefined) {
             player = this;
         }
 
@@ -47,7 +53,7 @@ define(["encode"], function(encode) {
     };
     Player.prototype.getTotalPoints = function(player) {
         // console.log("PlayerFunctions.getTotalPoints(" + player + ")");
-        if (player === null || player === undefined) {
+        if (arguments[0] === null || arguments[0] === undefined) {
             player = this;
         }
 
@@ -55,7 +61,7 @@ define(["encode"], function(encode) {
     };
     Player.prototype.getNumberOfSeasons = function(player) {
         // console.log("PlayerFunctions.getNumberOfSeasons(" + player + ")");
-        if (player === null || player === undefined) {
+        if (arguments[0] === null || arguments[0] === undefined) {
             player = this;
         }
 
@@ -63,7 +69,7 @@ define(["encode"], function(encode) {
     };
     Player.prototype.getAverageNumberOfGamesPerSeason = function(player) {
         // console.log("PlayerFunctions.getAveragePoints(" + player + ")");
-        if (player === null || player === undefined) {
+        if (arguments[0] === null || arguments[0] === undefined) {
             player = this;
         }
 
@@ -74,7 +80,7 @@ define(["encode"], function(encode) {
     };
     Player.prototype.getAveragePointsPerSeason = function(player) {
         // console.log("PlayerFunctions.getAveragePoints(" + player + ")");
-        if (player === null || player === undefined) {
+        if (arguments[0] === null || arguments[0] === undefined) {
             player = this;
         }
 
@@ -82,7 +88,7 @@ define(["encode"], function(encode) {
     };
     Player.prototype.getAveragePointsPerGame = function(player) {
         // console.log("PlayerFunctions.getAveragePoints(" + player + ")");
-        if (player === null || player === undefined) {
+        if (arguments[0] === null || arguments[0] === undefined) {
             player = this;
         }
 
@@ -93,7 +99,7 @@ define(["encode"], function(encode) {
     };
     Player.prototype.getLastSeasonPlayed = function(player) {
         // console.log("PlayerFunctions.getLastSeasonPlayed(" + player + ")");
-        if (player === null || player === undefined) {
+        if (arguments[0] === null || arguments[0] === undefined) {
             player = this;
         }
 
@@ -104,7 +110,7 @@ define(["encode"], function(encode) {
     };
     Player.prototype.getPlayerMomentum = function(player) {
         // console.log("PlayerFunctions.getTextSummary(" + player + ")");
-        if (player === null || player === undefined) {
+        if (arguments[0] === null || arguments[0] === undefined) {
             player = this;
         }
 
@@ -130,7 +136,7 @@ define(["encode"], function(encode) {
     };
     Player.prototype.toString = function(player) {
         // console.log("PlayerFunctions.getTextSummary(" + player + ")");
-        if (player === null || player === undefined) {
+        if (arguments[0] === null || arguments[0] === undefined) {
             player = this;
         }
 
@@ -138,7 +144,7 @@ define(["encode"], function(encode) {
     };
     Player.prototype.toStringSummary = function(player) {
         // console.log("PlayerFunctions.getTextSummary(" + player + ")");
-        if (player === null || player === undefined) {
+        if (arguments[0] === null || arguments[0] === undefined) {
             player = this;
         }
 
@@ -146,7 +152,7 @@ define(["encode"], function(encode) {
             "\n# of seasons: " + Player.prototype.getNumberOfSeasons(player) + " (last played: " + Player.prototype.getLastSeasonPlayed(player) + ")" +
             "\nTotal points: " + Player.prototype.getTotalPoints(player) + " (~" + Player.prototype.getAveragePointsPerSeason(player) + " per season and ~" + Player.prototype.getAveragePointsPerGame(player) + " per game)" +
             "\nMomentum " + (Player.prototype.getPlayerMomentum(player) * 100).toFixed(2) + "% momentum";
-    };    
+    };
 
     /**
      * A class representing a single player's season statistics (i.e., 2012 season, 2013 season, etc.)
@@ -161,14 +167,16 @@ define(["encode"], function(encode) {
     }
 
     Season.prototype.getNumberOfGames = function(season) {
-        if (season === null || season === undefined) {
+        if (arguments[0] === null || arguments[0] === undefined) {
             season = this;
         }
 
         return season.games.length;
     };
     Season.prototype.getTotalPointsFor = function(season, propertyGroup) {
-        if (season === null || season === undefined) {
+        // If partial arguments are provided, apply the correct values
+        if (arguments[0] === null || arguments[0] === undefined || typeof arguments[0] != "object") {
+            propertyGroup = arguments[0]; // Player object, not provided as parameter, so fall back
             season = this;
         }
 
@@ -180,7 +188,9 @@ define(["encode"], function(encode) {
         return totalPoints;
     };
     Season.prototype.getAveragePointsPerGameFor = function(season, propertyGroup) {
-        if (season === null || season === undefined) {
+        // If partial arguments are provided, apply the correct values
+        if (arguments[0] === null || arguments[0] === undefined || typeof arguments[0] != "object") {
+            propertyGroup = arguments[0]; // Player object, not provided as parameter, so fall back
             season = this;
         }
 
@@ -239,7 +249,9 @@ define(["encode"], function(encode) {
         return this;
     }
     Game.prototype.getTotalPointsFor = function(game, propertyGroup) {
-        if (game === null || game === undefined) {
+        // If partial arguments are provided, apply the correct values
+        if (arguments[0] === null || arguments[0] === undefined || typeof arguments[0] != "object") {
+            propertyGroup = arguments[0]; // Player object, not provided as parameter, so fall back
             game = this;
         }
 
@@ -259,6 +271,44 @@ define(["encode"], function(encode) {
 
         return total;
     };
+
+    function Players(players) {
+        // Copy players into "this"
+        _.extend(this, players);
+
+        return this;
+    }
+    Players.prototype.getPlayerById = function(players, id) {
+        // If partial arguments are provided, apply the correct values
+        if (arguments[0] === null || arguments[0] === undefined || typeof arguments[0] != "object") {
+            id = arguments[0]; // Player object, not provided as parameter, so fall back
+            players = this;
+        }
+
+        return players[id];
+    }
+    Players.prototype.getPlayerByName = function(players, name) {
+        // If partial arguments are provided, apply the correct values
+        if (arguments[0] === null || arguments[0] === undefined || typeof arguments[0] != "object") {
+            name = arguments[0]; // Player object, not provided as parameter, so fall back
+            players = this;
+        }
+
+        return [_.find(players, function(value, key, list) {
+            return value.lastName + value.firstName == name;
+        })]
+    }
+    Players.prototype.getPlayersByPosition = function(players, position) {
+        // If partial arguments are provided, apply the correct values
+        if (arguments[0] === null || arguments[0] === undefined || typeof arguments[0] != "object") {
+            position = arguments[0]; // Player object, not provided as parameter, so fall back
+            players = this;
+        }
+
+        return [_.filter(players, function(value, key, list) {
+            return value.position == position;
+        })];
+    }
 
     /**
      * Extends functions (i.e., max / min values for a set, memoization, etc.)
@@ -286,7 +336,7 @@ define(["encode"], function(encode) {
     // for (var playerFunction in Player.prototype) {
     //     Player.prototype[playerFunction] = (function(func) {
     //         return function(player) {
-    //             if (player === null || player === undefined) {
+    //             if (arguments[0] === null || arguments[0] === undefined) {
     //                 return func;
     //             } else {
     //                 return _.memoize(func, Player.prototype.getHash);
@@ -296,14 +346,15 @@ define(["encode"], function(encode) {
     // }
 
     // for (var seasonFunction in Season.prototype) {
-    //     Season.prototype[seasonFunction] = function(season) {var func = Season.prototype[seasonFunction]; if (season === null || season === undefined) {return func; } else {return extendFunction(func); }; }
+    //     Season.prototype[seasonFunction] = function(season) {var func = Season.prototype[seasonFunction]; if (arguments[0] === null || arguments[0] === undefined) {return func; } else {return extendFunction(func); }; }
     // }
 
     // for (var gameFunction in Game.prototype) {
-    //     Game.prototype[gameFunction] = function(game) {var func = Game.prototype[gameFunction]; if (game === null || game === undefined) {return func; } else {return extendFunction(func); }; }
+    //     Game.prototype[gameFunction] = function(game) {var func = Game.prototype[gameFunction]; if (arguments[0] === null || arguments[0] === undefined) {return func; } else {return extendFunction(func); }; }
     // }    
 
     return {
+        Players: Players,
         Player: Player,
         Season: Season,
         Game: Game

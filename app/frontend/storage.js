@@ -18,7 +18,7 @@ define(["FileSaver"], function(saveAs) {
 		return $.ajax({
 			type: "POST",
 			url: '/data',
-			data: data,
+			data: JSON.stringify(data),
 			cache: false
 		});
 	};
