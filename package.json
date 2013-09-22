@@ -5,13 +5,17 @@
 	"scripts": {
 		"start": "node ./app/backend.js"
 	},
+"repository" :
+  { "type" : "git"
+  , "url" : "https://github.com/tyler-speakman/NFL-Statistics-Scraper.git"
+  },
 	"dependencies": {
 		"lodash": "*",
-		"connect": "*",
+		"connect": "2.9.0",
 		"async": "*",
 		"gzippo": "*",
 		"winston": "*",
-		"requirejs": "*",
+		"requirejs": "2.1.8",
 		"lru-cache": "*"
 	},
 	"engines": {
