@@ -1,0 +1,8 @@
+Heroku
+
+http://stackoverflow.com/questions/4269922/permission-denied-publickey-when-deploying-heroku-code-fatal-the-remote-end/8081456#8081456
+ heroku keys:remove //removes the existing key
+ ssh-keygen -t rsa //generates a new key in ~/.ssh folder
+ heroku keys:add    //uploads the new key, if no arguments r passed then the key generated                              
+                    //in default directroy i.e., ~/.ssh/id_rsa is uploaded
+ git push heroku
