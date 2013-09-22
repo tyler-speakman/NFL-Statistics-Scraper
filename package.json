@@ -19,7 +19,7 @@
 		"lru-cache": "*"
 	},
 	"engines": {
-		"node": "*",
-		"npm": "*"
+     "node": "0.10.x",
+     "npm": "1.2.x"
 	}
 }
