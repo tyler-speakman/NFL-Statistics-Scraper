@@ -122,7 +122,7 @@ define(["d3", "core", "math"], function(d3, core, mathEx) {
         availableData = _.filter(availableData, function(element, index, list) {
             var isNull = element === null;
             var currentYear = (new Date()).getUTCFullYear();
-            var isActive = currentYear - core.Player.prototype.getLastSeasonPlayed(element) <= 2;// Player was active in the last 3 years
+            var isActive = currentYear - core.Player.prototype.getLastSeasonPlayed(element) <= 2; // Player was active in the last 3 years
             return !isNull && isActive;
         });
 

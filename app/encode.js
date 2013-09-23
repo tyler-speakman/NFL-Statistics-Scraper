@@ -1,6 +1,6 @@
 define(function() {
 	"use strict";
-	
+
 	var self = {};
 
 	self.hash = function(str) {

@@ -1,7 +1,7 @@
 define(['fs', 'path', 'async'], function(fs, path, async) {
-  'use strict';
+	'use strict';
 
-	var myDataFilePath = path.resolve("./myData.json")
+	var myDataFilePath = path.resolve('./myData.json');
 	console.log(myDataFilePath);
 
 	// queues up a save action. Prevents file access collisions (hopefully)
@@ -9,7 +9,7 @@ define(['fs', 'path', 'async'], function(fs, path, async) {
 		fs.writeFile(myDataFilePath, JSON.stringify(tmpData), function(err) {
 			if (err) {
 				// throw err;
-				console.log("error");
+				console.log('error');
 				console.log(err);
 			}
 
@@ -18,7 +18,7 @@ define(['fs', 'path', 'async'], function(fs, path, async) {
 	}, 1);
 
 	function save(data) {
-		console.log("storage.save()");
+		console.log('storage.save()');
 
 		saveQueue.push(data, function(err) {
 			console.log('storage.save() : Saved');
@@ -26,7 +26,7 @@ define(['fs', 'path', 'async'], function(fs, path, async) {
 	}
 
 	function load() {
-		console.log("storage.load()");
+		console.log('storage.load()');
 
 		// Load existing data from a file if it exists
 		if (fs.existsSync(myDataFilePath)) {
