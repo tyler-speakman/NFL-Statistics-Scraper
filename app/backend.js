@@ -2,9 +2,9 @@ var requirejs = require('requirejs');
 
 requirejs.config({
 	nodeRequire: require,
-	baseUrl: '../',
 	paths: {
-	    // app: '../app',
+	    'libs': '../libs',
+        'libs/lodash': "../libs/lodash.min",
 	    // async: '../node_modules/async',
 	    // connect: '../node_modules/connect',
 	    // async: '../node_modules/gzippo',

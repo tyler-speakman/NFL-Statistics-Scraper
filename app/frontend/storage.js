@@ -1,4 +1,4 @@
-define(["FileSaver"], function(saveAs) {
+define(["libs/FileSaver"], function(saveAs) {
 	"use strict";
 	var self = {};
 

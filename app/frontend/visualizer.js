@@ -1,4 +1,4 @@
-define(["d3", "core", "math"], function(d3, core, mathEx) {
+define(["libs/d3", "app/core", "app/math"], function(d3, core, mathEx) {
     "use strict";
 
     function redrawPlayerData(loadedData) {

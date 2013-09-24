@@ -1,9 +1,9 @@
 require.config({
-    baseUrl: "/app",
     paths: {
-        "d3": "../libs/d3.v3.min",
-        "lodash": "../libs/lodash.min",
-        "FileSaver": "../libs/FileSaver"
+        "d3": "d3.v3.min",
+        "lodash": "lodash.min",
+        "FileSaver": "FileSaver",
+
     },
     shim: {
         "d3": {
@@ -26,7 +26,7 @@ require.config({
 // define("jquery", function () { return jQuery; });
 // define("knockout", ko);
 
-define(["frontend/storage", "parser", "frontend/visualizer", "ProgressHandler"], function(storage, parser, visualizer, ProgressHandler) {
+define(["app/frontend/storage", "app/parser", "app/frontend/visualizer", "app/ProgressHandler"], function(storage, parser, visualizer, ProgressHandler) {
     "use strict";
 
     function visualizeHandler(e) {

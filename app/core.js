@@ -1,4 +1,4 @@
-define(["lodash", "./encode"], function(_, encode) {
+define(["libs/lodash", "encode"], function(_, encode) {
     "use strict";
     /**
      * A class representing an NFL player

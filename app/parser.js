@@ -1,4 +1,4 @@
-define(["encode", "core"], function(encode, core) {
+define(["app/encode", "app/core"], function(encode, core) {
     "use strict";
 
     /**
