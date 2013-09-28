@@ -3,7 +3,13 @@ var requirejs = require('requirejs');
 requirejs.config({
 	nodeRequire: require,
 	paths: {
-		'libs': '../libs',
+		'lodash': '../node_modules/lodash',
+		'connect': '../node_modules/connect',
+		'async': '../node_modules/async',
+		'gzippo': '../node_modules/gzippo',
+		'requirejs': '../node_modules/requirejs',
+		'lru-cache': '../node_modules/lru-cache',
+
 		'libs/lodash': "../libs/lodash.min",
 	},
 	shim: {
