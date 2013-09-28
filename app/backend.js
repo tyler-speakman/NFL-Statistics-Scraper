@@ -1,4 +1,4 @@
-var requirejs = require('/node_modules/requirejs');
+var requirejs = require('node_modules/requirejs');
 
 requirejs.config({
 	nodeRequire: require,
